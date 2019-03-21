@@ -25,8 +25,8 @@ using namespace std;
 
 MenuBar menuBar("Main Menu");
 WifiScanner scanner;
-bool light = false;
-int contrast = 60;
+bool light = true;
+int contrast = 50;
 
 void initPin();
 void showKeyboard();
@@ -36,7 +36,7 @@ int createFileList(MenuItem *menuItem, string path);
 int milisecond();
 void getIP(MenuItem *setting4);
 void shutdownOptions();
-void startFruitPicker(int angle, int duration, int ballColor);
+void startFruitPicker(int angle, int duration, int ballColor, int offsetX, int offsetY);
 extern string exec(const char* cmd);
 void runProgram(string filename, string path, string param = "");
 
@@ -69,7 +69,11 @@ int main()
     NumberMenuItem prog11("Angle", 0);
     NumberMenuItem prog12("Duration", 10);
     NumberMenuItem prog13("Color", 0);
-    MenuItem prog14("Start");
+    MenuItem prog14("Offset");
+    MenuItem prog15("Start");
+
+    NumberMenuItem prog141("Distance", 0);
+    NumberMenuItem prog142("Height", 0);
 
     prog13.addValueLabel("RED");
     prog13.addValueLabel("GREEN");
@@ -87,6 +91,10 @@ int main()
     prog1.addItem(&prog12);
     prog1.addItem(&prog13);
     prog1.addItem(&prog14);
+    prog1.addItem(&prog15);
+
+    prog14.addItem(&prog141);
+    prog14.addItem(&prog142);
 
     sys.addItem(&setting1);
     sys.addItem(&setting2);
@@ -107,8 +115,15 @@ int main()
     prog13.setAction([&prog13](){
         prog13.setValue(menuBar.showDialog(prog13.getTitle(), prog13.getValue(), prog13.getLabels()));
     });
-    prog14.setAction([&prog11, &prog12, &prog13](){
-        startFruitPicker(prog11.getValue(), prog12.getValue(), prog13.getValue());
+    prog15.setAction([&prog11, &prog12, &prog13, &prog141, &prog142](){
+        startFruitPicker(prog11.getValue(), prog12.getValue(), prog13.getValue(), prog141.getValue(), prog142.getValue());
+    });
+
+    prog141.setAction([&prog141](){
+        prog141.setValue(menuBar.showDialog(prog141.getTitle(), prog141.getValue()));
+    });
+    prog142.setAction([&prog142](){
+        prog142.setValue(menuBar.showDialog(prog142.getTitle(), prog142.getValue()));
     });
 
     prog2.setAction(showKeyboard);
@@ -192,10 +207,10 @@ int main()
         }
         else
         {
-            if (digitalRead (BTN1) == LOW && digitalRead (BTN4) == LOW)
+            if (digitalRead (BTN1) == LOW)
             {
                 int start = milisecond();
-                while ((digitalRead (BTN1) == LOW) && (digitalRead (BTN4) == LOW) && (milisecond() - start < 2000))
+                while ((digitalRead (BTN1) == LOW) && (milisecond() - start < 2000))
                 {
                     delay(50);
                 }
@@ -222,10 +237,14 @@ void runProgram(string filename, string path, string param)
     runProgramMode = true;
 }
 
-void startFruitPicker(int angle, int duration, int ballColor)
+void startFruitPicker(int angle, int duration, int ballColor, int offsetX, int offsetY)
 {
-    string param = to_string(angle) + " " + to_string(duration) + " " + to_string(ballColor);
-    runProgram("FruitPicker", "/home/pi/projects/build-FruitPicker/FruitPicker", param);
+    string param = to_string(angle) + " " + to_string(duration) + " " + to_string(ballColor) + " " + to_string(offsetX) + " " + to_string(offsetY);
+    string cmd = "sudo /home/pi/build-FruitPicker-Desktop-Debug/FruitPicker " + param;
+
+    menuBar.showDialog("Program", "FruitPicker is running.");
+    exec(cmd.c_str());
+    menuBar.update();
 }
 
 void getIP(MenuItem *setting4)
@@ -284,7 +303,7 @@ void showKeyboard()
 void changeLight(MenuItem *setting3)
 {
     light = !light;
-    if (light) setting3->setTitle("Light: On");
+    if (!light) setting3->setTitle("Light: On");
     else setting3->setTitle("Light: OFF");
     menuBar.update();
     digitalWrite(BL, light);

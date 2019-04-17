@@ -36,7 +36,7 @@ int createFileList(MenuItem *menuItem, string path);
 int milisecond();
 void getIP(MenuItem *setting4);
 void shutdownOptions();
-void startFruitPicker(int angle, int duration, int ballColor, int offsetX, int offsetY);
+void startFruitPicker(int angle, int duration, int ballColor, int offsetX, int offsetY, int v1, int v2, int stadium);
 extern string exec(const char* cmd);
 void runProgram(string filename, string path, string param = "");
 
@@ -67,17 +67,23 @@ int main()
     MenuItem prog2("Show Keyboard");
 
     NumberMenuItem prog11("Angle", 0);
-    NumberMenuItem prog12("Duration", 10);
+    NumberMenuItem prog12("Duration", 8);
     NumberMenuItem prog13("Color", 0);
-    MenuItem prog14("Offset");
+    MenuItem prog14("Options");
     MenuItem prog15("Start");
+    NumberMenuItem prog16("Zone", 0);
 
     NumberMenuItem prog141("Distance", 0);
     NumberMenuItem prog142("Height", 0);
+    NumberMenuItem prog143("Velocity 1", 60);
+    NumberMenuItem prog144("Velocity 2", 50);
 
     prog13.addValueLabel("RED");
-    prog13.addValueLabel("GREEN");
     prog13.addValueLabel("BLUE");
+    prog13.addValueLabel("GREEN");
+
+    prog16.addValueLabel("BLUE");
+    prog16.addValueLabel("RED");
 
     MenuItem setting1("LCD Contrast");
     MenuItem setting2("Wi-Fi");
@@ -90,11 +96,14 @@ int main()
     prog1.addItem(&prog11);
     prog1.addItem(&prog12);
     prog1.addItem(&prog13);
+    prog1.addItem(&prog16);
     prog1.addItem(&prog14);
     prog1.addItem(&prog15);
 
     prog14.addItem(&prog141);
     prog14.addItem(&prog142);
+    prog14.addItem(&prog143);
+    prog14.addItem(&prog144);
 
     sys.addItem(&setting1);
     sys.addItem(&setting2);
@@ -115,8 +124,11 @@ int main()
     prog13.setAction([&prog13](){
         prog13.setValue(menuBar.showDialog(prog13.getTitle(), prog13.getValue(), prog13.getLabels()));
     });
-    prog15.setAction([&prog11, &prog12, &prog13, &prog141, &prog142](){
-        startFruitPicker(prog11.getValue(), prog12.getValue(), prog13.getValue(), prog141.getValue(), prog142.getValue());
+    prog16.setAction([&prog16](){
+        prog16.setValue(menuBar.showDialog(prog16.getTitle(), prog16.getValue(), prog16.getLabels()));
+    });
+    prog15.setAction([&prog11, &prog12, &prog13, &prog141, &prog142, &prog143, &prog144, &prog16](){
+        startFruitPicker(prog11.getValue(), prog12.getValue(), prog13.getValue(), prog141.getValue(), prog142.getValue(), prog143.getValue(), prog144.getValue(), prog16.getValue());
     });
 
     prog141.setAction([&prog141](){
@@ -124,6 +136,12 @@ int main()
     });
     prog142.setAction([&prog142](){
         prog142.setValue(menuBar.showDialog(prog142.getTitle(), prog142.getValue()));
+    });
+    prog143.setAction([&prog143](){
+        prog143.setValue(menuBar.showDialog(prog143.getTitle(), prog143.getValue()));
+    });
+    prog144.setAction([&prog144](){
+        prog144.setValue(menuBar.showDialog(prog144.getTitle(), prog144.getValue()));
     });
 
     prog2.setAction(showKeyboard);
@@ -237,9 +255,9 @@ void runProgram(string filename, string path, string param)
     runProgramMode = true;
 }
 
-void startFruitPicker(int angle, int duration, int ballColor, int offsetX, int offsetY)
+void startFruitPicker(int angle, int duration, int ballColor, int offsetX, int offsetY, int v1, int v2, int stadium)
 {
-    string param = to_string(angle) + " " + to_string(duration) + " " + to_string(ballColor) + " " + to_string(offsetX) + " " + to_string(offsetY);
+    string param = to_string(angle) + " " + to_string(duration) + " " + to_string(ballColor) + " " + to_string(offsetX) + " " + to_string(offsetY) + " " + to_string(v1) + " " + to_string(v2) + " " + to_string(stadium);
     string cmd = "sudo /home/pi/build-FruitPicker-Desktop-Debug/FruitPicker " + param;
 
     menuBar.showDialog("Program", "FruitPicker is running.");
